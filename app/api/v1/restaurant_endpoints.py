@@ -8,6 +8,7 @@ from fastapi import Depends, Query
 from sqlalchemy.orm import Session
 from app.business_logic.restaurant_service import RestaurantService
 from app.data_access_layer.database import get_db
+from app.data_access_layer.models import Restaurant as RestaurantModel
 from app.api.v1.schemas.restaurant import (
     RestaurantCreate,
     RestaurantUpdate,
@@ -22,7 +23,7 @@ def get_restaurant_service(db: Session = Depends(get_db)) -> RestaurantService:
     """
     Dependency to provide a RestaurantService instance for use cases.
     """
-    return RestaurantService(db)
+    return RestaurantService(db=db, model=RestaurantModel)
 
 
 @router.post("/", response_model=Restaurant, summary="Create restaurant")
@@ -33,7 +34,7 @@ def create_restaurant(
     """
     Create a new restaurant using service layer.
     """
-    return service.create_restaurant(payload.model_dump(exclude_unset=True))
+    return service.create(payload.model_dump(exclude_unset=True))
 
 
 @router.get("/", response_model=List[Restaurant], summary="List restaurants")
@@ -45,7 +46,7 @@ def list_restaurants(
     """
     List restaurants with pagination via service.
     """
-    return service.list_restaurants(skip=skip, limit=limit)
+    return service.list_all(skip=skip, limit=limit)
 
 
 @router.get(
@@ -59,8 +60,8 @@ def get_top_by_cuisine(
     """
     Return the top `limit` restaurants for a given cuisine, ordered by rating.
     """
-    return service.get_restaurant_by_attributes(
-        attributes={"cuisine": cuisine}, limit=limit, order_by_rating=True
+    return service.get_by_attributes(
+        attributes={"cuisine": cuisine}, limit=limit, order_by="rating", descending=True
     )
 
 
@@ -74,7 +75,7 @@ def get_restaurant(
     """
     Fetch a single restaurant by ID via service.
     """
-    return service.get_restaurant(restaurant_id)
+    return service.get(restaurant_id)
 
 
 @router.patch(
@@ -88,9 +89,7 @@ def patch_restaurant(
     """
     Partially update a restaurant via service.
     """
-    return service.update_restaurant(
-        restaurant_id, payload.model_dump(exclude_unset=True)
-    )
+    return service.update(restaurant_id, payload.model_dump(exclude_unset=True))
 
 
 @router.delete(
@@ -103,4 +102,4 @@ def delete_restaurant(
     """
     Delete a restaurant via service.
     """
-    return service.delete_restaurant(restaurant_id)
+    return service.delete(restaurant_id)
