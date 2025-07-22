@@ -1,13 +1,12 @@
 import pytest
 
-from app.data_access_layer.models import Restaurant
 from app.exceptions import NotFoundError, ValidationError
 from app.business_logic.restaurant_service import RestaurantService
 
 
 @pytest.fixture
 def service(db_session):
-    return RestaurantService(db=db_session, model=Restaurant)
+    return RestaurantService(db=db_session)
 
 
 def test_create_and_unique(service):

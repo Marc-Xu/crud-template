@@ -8,7 +8,6 @@ from fastapi import Depends, Query
 from sqlalchemy.orm import Session
 from app.business_logic.restaurant_service import RestaurantService
 from app.data_access_layer.database import get_db
-from app.data_access_layer.models import Restaurant as RestaurantModel
 from app.api.v1.schemas.restaurant import (
     RestaurantCreate,
     RestaurantUpdate,
@@ -23,7 +22,7 @@ def get_restaurant_service(db: Session = Depends(get_db)) -> RestaurantService:
     """
     Dependency to provide a RestaurantService instance for use cases.
     """
-    return RestaurantService(db=db, model=RestaurantModel)
+    return RestaurantService(db=db)
 
 
 @router.post("/", response_model=Restaurant, summary="Create restaurant")
